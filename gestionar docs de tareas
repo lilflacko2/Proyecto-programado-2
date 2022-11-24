@@ -1,0 +1,218 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct document{
+    int ID;
+    char route[20];
+    char description[50];
+    char type[20];
+    struct document *left;
+    struct document *right;
+}document;
+
+document* root = NULL;//root del arbol
+
+//ENTRADAS: un codigo del pais, nombre, poblacion y el continente
+//SALIDAS: genera un alamenamiento de la informacion de los paises
+//RESTRICCIONES: se utilizan punteros 
+
+document* new_document(int ID, char route[20], char description[50], char type[20]) {
+    //para crear una nueva hoja de un country
+    document* new = (document*) malloc(sizeof(document));
+    new->ID = ID;
+    strcpy(new->route, route);
+    strcpy(new->description, description);
+    strcpy(new->type, type);
+    new->left = NULL;
+    new->right = NULL;
+    return new;
+}
+
+//ENTRADAS: un codigo del pais, nombre, poblacion y el continente
+//SALIDAS: inserta el pais
+//RESTRICCIONES: se usan punteros
+
+void insert_document(document* node, int ID, char route[20], char description[50], char type[20]){
+    //metodo para insertar un new country
+    if(node == NULL){
+        root = new_document(ID, route, description, type);
+    }
+    else if (ID > node->ID) {
+        // primero a la derecha
+        if (node->right == NULL) {
+            node->right = new_document(ID, route, description, type);
+        } else {
+            // se aplica recursividad hasta encontrar una rama vacia
+            insert_document(node->right, ID, route, description, type);
+        }
+    } else {
+        // si no se hace la insercion a la izquierda
+        if (node->left == NULL) {
+            node->left = new_document(ID, route, description, type);
+        } else {
+            // se aplica recursividad hasta encontrar una rama vacia
+            insert_document(node->left, ID, route, description, type);
+        }
+    }
+}
+
+//Metodo para la modificacion de un country
+//ENTRADAS: un nodo y el codigo
+//SALIDAS: modifica el pais
+//RESTRICCIONES: se usan punteros
+void modify_document(document* node, int ID)
+{
+    if(node == NULL){
+        printf("ID not found!");
+        return;
+    }
+    else if(node->ID == ID)
+    {
+        printf("Insert the new route: ");
+        scanf("%s", &node->route);
+        printf("Insert the new description: ");
+        scanf("%s", &node->description);
+        printf("Insert the new type: ");
+        scanf("%s", &node->type);
+        printf("Successfully modified!");
+        getchar();
+        getchar();
+    }
+    else if(ID < node->ID)
+    {
+        modify_document(node->left, ID);
+    }
+    else
+    {
+        modify_document(node->right, ID);
+    }
+}
+
+document* minor_leaf( document* node)//metodo que busca la hoja menor del arbol
+{
+    document* aux = node;
+
+    while (aux && aux->left) {
+        aux = aux->left;
+    }
+
+    return aux;
+}
+//ENTRADAS: nodo y codigo
+//SALIDAS: elimina un pais
+//RESTRICCIONES: se usan punteros
+document* delete_document(document* node, int ID)//metodo para eliminacion de un country
+{
+    if (node == NULL)
+    {
+        return node;
+    }
+    if (ID < node->ID){
+        node->left = delete_document(node->left, ID);
+    }
+    else if (ID > node->ID){
+        node->right = delete_document(node->right, ID);
+    }
+    else {
+        if (node->left == NULL) {
+            document* aux = node->right;
+            free(node);
+            return aux;
+        }
+        else if (node->right == NULL) {
+            document* aux = node->left;
+            free(node);
+            return aux;
+        }
+
+        document* aux = minor_leaf(node->right);
+
+        node->ID = aux->ID;
+        node->right = delete_document(node->right, aux->ID);
+    }
+}
+
+void in_order(document* node) //imprimir los countryes de menor a mayor
+{
+    if (node != NULL) 
+    {
+        in_order(node->left);
+        printf("ID: %d\n", node->ID);
+        printf("Route: %s\n", node->route);
+        printf("Description: %s\n", node->description);
+        printf("Type: %s\n", node->type);
+        printf("****************************************\n");
+        in_order(node->right);
+    }
+}
+/*
+//metodo para la impresion del orden jerarquico del arbol binario
+
+//ENTRADAS: nodo, un primero y un count
+//SALIDAS:  muestra el orden jerarquico del arbol binario 
+//RESTRICCIONES: se usan punteros
+void show_hierarchy(Country* node, int primero, int count)
+{
+    if(node!=NULL)
+    {
+        if(primero == 1)
+        {
+            printf("\tCodigo: %d , Nombre: %s, Habitantes: %d, Continente: %s\n", node->code, node->name, node->population, node->continent);
+        }
+        if(node->left != NULL)
+        {
+            for(int i = 0; i < count; i++){
+                printf("\t");
+            }
+            printf("Codigo: %d , Nombre: %s, Habitantes: %d, Continente: %s\n", node->left->code, node->left->name, node->left->population, node->left->continent);
+            show_hierarchy(node->left, 0, count + 1);
+        }
+        if(node->right != NULL)
+        {
+            for(int i = 0; i < count; i++){
+                printf("\t");
+            }
+            printf("Codigo: %d , Nombre: %s, Habitantes: %d, Continente: %s\n", node->right->code, node->right->name, node->right->population, node->right->continent);
+            show_hierarchy(node->right, 0, count + 1);
+        }
+    }
+}
+*/
+
+void document_Menu()
+{
+	printf("\n\n");
+    printf("\n********************************************************\n");
+    printf("                 (1). Insert document\n");
+    printf("                 (2). Modify document\n");
+    printf("                 (3). Delete document\n");
+    printf("                 (4). See document\n");
+    printf("                 (5). Salir\n");
+    printf("*******************************************************\n");
+    printf("\n\n");
+}
+
+//BUSQUEDAS: 
+document* print_task(document* node, int ID) //imprimir los countryes de menor a mayor
+{
+
+    if (node != NULL) 
+    {
+	if (ID < node->ID){
+        node->left = print_task(node->left, ID);
+    }
+    else if (ID > node->ID){
+        node->right = print_task(node->right, ID);
+    }    
+	else{	
+        //in_order(node->left);
+        printf("ID: %d\n", node->ID);
+        printf("Route: %s\n", node->route);
+        printf("Description: %s\n", node->description);
+        printf("Type: %s\n", node->type);
+        printf("****************************************\n");
+        //in_order(node->right);
+    }
+}
+}
